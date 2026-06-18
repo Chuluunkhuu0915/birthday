@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Төрсөн өдрийн мэнд</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Caveat:wght@500;600;700&family=Montserrat:wght@300;400;500&display=swap&subset=cyrillic,cyrillic-ext,latin" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#2E1622;
+    --bg-mid:#5A2A41;
+    --bg-glow:#8E4259;
+    --gold:#E6B27C;
+    --gold-soft:#F0CFA3;
+    --cream:#FBF4E9;
+    --paper:#FCF7EE;
+    --paper-line:#EADBC4;
+    --rose:#E59AA0;
+    --garnet:#9B2D3A;
+    --ink:#4A2A33;
+    --ink-soft:#7A5560;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  html,body{height:100%;}
+
+  body{
+    font-family:'Montserrat',sans-serif;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 18%, var(--bg-glow) 0%, transparent 60%),
+      radial-gradient(ellipse 120% 90% at 50% 120%, #1B0D15 0%, transparent 55%),
+      linear-gradient(160deg, var(--bg-deep) 0%, var(--bg-mid) 100%);
+    background-attachment:fixed;
+    min-height:100dvh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow-x:hidden;
+    color:var(--cream);
+    padding:24px;
+    position:relative;
+  }
+
+  /* soft floating glows */
+  .ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .ambient i{
+    position:absolute;border-radius:50%;
+    background:radial-gradient(circle, rgba(230,178,124,.35), transparent 70%);
+    filter:blur(6px);animation:drift 14s ease-in-out infinite;
+  }
+  .ambient i:nth-child(1){width:160px;height:160px;left:8%;top:18%;animation-delay:0s;}
+  .ambient i:nth-child(2){width:110px;height:110px;right:12%;top:30%;animation-delay:-4s;}
+  .ambient i:nth-child(3){width:200px;height:200px;left:20%;bottom:8%;animation-delay:-8s;opacity:.6;}
+  @keyframes drift{
+    0%,100%{transform:translate(0,0);}
+    50%{transform:translate(20px,-26px);}
+  }
+
+  .scene{position:relative;z-index:2;width:100%;max-width:560px;display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;align-items:center;}
+
+  .intro{grid-area:1/1;display:flex;flex-direction:column;align-items:center;transition:opacity .5s ease,transform .6s ease;}
+  .open .intro{opacity:0;transform:scale(.94);pointer-events:none;transition:opacity .5s ease .35s,transform .6s ease .35s;}
+
+  /* ENVELOPE */
+  .envelope{
+    position:relative;
+    width:min(360px,84vw);
+    height:min(240px,56vw);
+    cursor:pointer;
+    transition:transform .6s cubic-bezier(.22,1,.36,1);
+    filter:drop-shadow(0 26px 40px rgba(0,0,0,.45));
+  }
+  .envelope:focus-visible{outline:3px solid var(--gold);outline-offset:14px;border-radius:8px;}
+
+  .env-body{
+    position:absolute;inset:0;
+    background:linear-gradient(155deg,#F4E7D0,#E7D2AE);
+    border-radius:10px;
+  }
+  /* the front "pocket" triangles */
+  .env-body::before{
+    content:"";position:absolute;inset:0;border-radius:10px;
+    background:
+      linear-gradient(45deg, #EBD8B6 0%, #EBD8B6 50%, transparent 50%),
+      linear-gradient(-45deg, #E4CDA4 0%, #E4CDA4 50%, transparent 50%);
+    background-size:50% 100%;background-repeat:no-repeat;
+    background-position:left,right;
+    clip-path:polygon(0 100%,50% 42%,100% 100%);
+  }
+  .env-body::after{
+    content:"";position:absolute;inset:0;border-radius:10px;
+    background:linear-gradient(165deg,#F0DDBC,#E2CB9F);
+    clip-path:polygon(0 100%,0 18%,50% 60%,100% 18%,100% 100%);
+    box-shadow:inset 0 2px 6px rgba(255,255,255,.4);
+  }
+
+  .letter{
+    position:absolute;left:6%;top:8%;width:88%;height:84%;
+    background:var(--paper);
+    border-radius:6px;
+    z-index:3;
+    transform:translateY(0) scale(1);
+    transition:transform 1s cubic-bezier(.22,1,.36,1), opacity .6s ease;
+    box-shadow:0 6px 18px rgba(0,0,0,.12);
+    display:flex;align-items:flex-end;justify-content:center;
+    padding-bottom:12%;
+    overflow:hidden;
+  }
+  .letter .peek{
+    font-family:'Caveat',cursive;color:var(--ink-soft);
+    font-size:clamp(16px,4.5vw,22px);opacity:.6;
+  }
+
+  .env-flap{
+    position:absolute;left:0;top:0;width:100%;height:60%;
+    background:linear-gradient(165deg,#F2E0C0,#E0C99C);
+    clip-path:polygon(0 0,100% 0,50% 100%);
+    transform-origin:top;
+    transition:transform .7s ease, z-index 0s;
+    z-index:5;
+    backface-visibility:hidden;
+  }
+
+  .seal{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:54px;height:54px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #C24656, var(--garnet) 70%);
+    box-shadow:0 4px 10px rgba(0,0,0,.3), inset 0 2px 4px rgba(255,255,255,.25);
+    z-index:6;display:flex;align-items:center;justify-content:center;
+    transition:opacity .35s ease, transform .35s ease;
+  }
+  .seal svg{width:24px;height:24px;fill:var(--gold-soft);}
+
+  .hint{
+    margin-top:34px;font-family:'Caveat',cursive;
+    font-size:clamp(20px,5vw,26px);color:var(--gold-soft);
+    letter-spacing:.4px;opacity:.9;
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:.55;}50%{opacity:1;}}
+
+  /* OPEN STATE */
+  .open .envelope{transform:translateY(14px);}
+  .open .env-flap{transform:rotateX(180deg);z-index:1;transition:transform .7s ease, z-index 0s .35s;}
+  .open .seal{opacity:0;transform:translate(-50%,-50%) scale(.4);pointer-events:none;}
+  .open .hint{opacity:0;pointer-events:none;transition:opacity .4s;}
+  .open .letter{
+    transform:translateY(-20%) scale(.96);
+    opacity:0;
+    z-index:2;
+  }
+
+  /* The full message card */
+  .card{
+    position:relative;z-index:2;
+    width:min(560px,90vw);
+    background:var(--paper);
+    border-radius:14px;
+    padding:clamp(30px,7vw,52px) clamp(24px,6vw,46px);
+    box-shadow:0 30px 60px rgba(0,0,0,.4);
+    color:var(--ink);
+    text-align:center;
+    background-image:repeating-linear-gradient(transparent,transparent 37px,rgba(155,45,58,.05) 37px,rgba(155,45,58,.05) 38px);
+    border:1px solid var(--paper-line);
+    opacity:0;transform:translateY(40px);
+    pointer-events:none;
+    transition:opacity .8s ease .35s, transform .8s cubic-bezier(.22,1,.36,1) .35s;
+    grid-area:1/1;
+  }
+  .open .card{opacity:1;transform:translateY(0);pointer-events:auto;}
+
+  .card .eyebrow{
+    font-family:'Montserrat';font-weight:500;letter-spacing:4px;
+    text-transform:uppercase;font-size:11px;color:var(--garnet);
+    margin-bottom:18px;
+  }
+  .card h1{
+    font-family:'Playfair Display',serif;font-weight:600;
+    font-size:clamp(28px,7.5vw,46px);line-height:1.12;color:var(--ink);
+    margin-bottom:6px;
+  }
+  .card h1 .name{
+    display:block;font-family:'Caveat',cursive;font-weight:700;
+    color:var(--garnet);font-size:clamp(40px,11vw,68px);line-height:1;margin-top:6px;
+  }
+  .card .rule{
+    width:64px;height:2px;margin:22px auto;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  }
+  .card p{
+    font-weight:300;font-size:clamp(15px,4vw,17.5px);line-height:1.85;
+    color:var(--ink-soft);max-width:42ch;margin:0 auto;
+  }
+  .card .sign{
+    font-family:'Caveat',cursive;font-size:clamp(24px,6vw,32px);
+    color:var(--garnet);margin-top:26px;
+  }
+
+  /* PHOTO FRAME (polaroid style) */
+  .photo{
+    position:relative;
+    width:clamp(180px,55%,240px);
+    margin:0 auto 26px;
+    background:#fff;
+    padding:12px 12px 44px;
+    border-radius:3px;
+    box-shadow:0 10px 26px rgba(0,0,0,.22), 0 2px 6px rgba(0,0,0,.12);
+    transform:rotate(-2.5deg);
+    cursor:pointer;
+    transition:transform .35s ease;
+  }
+  .photo:hover{transform:rotate(0deg) scale(1.02);}
+  .photo:focus-visible{outline:3px solid var(--garnet);outline-offset:6px;}
+  .photo .frame{
+    position:relative;width:100%;aspect-ratio:4/5;
+    background:linear-gradient(135deg,#F3E7D2,#E7D2AE);
+    border-radius:2px;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .photo .frame img{
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;display:none;
+  }
+  .photo.has-img .frame img{display:block;}
+  .photo .ph{
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    color:var(--garnet);text-align:center;padding:10px;
+  }
+  .photo.has-img .ph{display:none;}
+  .photo .ph svg{width:30px;height:30px;fill:var(--garnet);opacity:.7;}
+  .photo .ph span{font-family:'Montserrat';font-size:11px;font-weight:500;letter-spacing:.5px;opacity:.85;}
+  .photo .cap{
+    position:absolute;left:0;right:0;bottom:12px;
+    font-family:'Caveat',cursive;font-size:20px;color:var(--ink-soft);text-align:center;
+  }
+
+  .replay{
+    grid-row:2;
+    margin-top:30px;background:none;border:1px solid rgba(251,244,233,.4);
+    color:var(--cream);font-family:'Montserrat';font-size:13px;font-weight:400;
+    letter-spacing:1px;padding:11px 24px;border-radius:30px;cursor:pointer;
+    transition:background .25s,border-color .25s;
+    opacity:0;transition:opacity .5s ease 1s, background .25s, border-color .25s;
+  }
+  .open .replay{opacity:.85;}
+  .replay:hover{background:rgba(251,244,233,.12);border-color:var(--gold);}
+
+  /* falling hearts/petals */
+  .petal{position:fixed;top:-40px;z-index:1;pointer-events:none;will-change:transform,opacity;}
+  .petal svg{display:block;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;transition-duration:.001ms!important;}
+  }
+</style>
+</head>
+<body>
+  <div class="ambient"><i></i><i></i><i></i></div>
+
+  <div class="scene" id="scene">
+    <div class="intro">
+      <!-- closed envelope -->
+      <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Захидлыг нээх">
+        <div class="env-body"></div>
+        <div class="letter"><span class="peek">чамдаа зориулав…</span></div>
+        <div class="env-flap"></div>
+        <div class="seal" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.9-9.8-9.2C.8 8.9 2.3 5.5 5.6 5.5c1.9 0 3.3 1.1 4.4 2.6C11.1 6.6 12.5 5.5 14.4 5.5c3.3 0 4.8 3.4 3.4 6.3C19.5 16.1 12 21 12 21z"/></svg>
+        </div>
+      </div>
+
+      <div class="hint" id="hint">Захидал дээр дарж нээгээрэй ♥</div>
+    </div>
+    <!-- the letter card -->
+    <article class="card" id="card" aria-hidden="true">
+      <div class="photo has-img" id="photo">
+        <div class="frame">
+          <img id="photoImg" src="bbyImg.jpg" alt="бид хоёр">
+        </div>
+        <div class="cap">Цэнд-Аюуш ♥</div>
+      </div>
+      <div class="eyebrow">Зөвхөн чамдаа</div>
+      <h1>Төрсөн өдрийн мэнд,<span class="name">Хайрт минь</span></h1>
+      <div class="rule"></div>
+      <p>
+        Чамтай хамт өнгөрүүлсэн цаг хугацаа бүр миний амьдралын хамгийн
+        утга учиртай мөчүүд минь шүү.
+      </p>
+      <div class="sign">Хайртай шүү ♥</div>
+    </article>
+
+    <button class="replay" id="replay" type="button">Дахин нээх</button>
+  </div>
+
+<script>
+  const scene = document.getElementById('scene');
+  const env   = document.getElementById('envelope');
+  const card  = document.getElementById('card');
+  const replay= document.getElementById('replay');
+  let opened = false;
+
+  function open(){
+    if(opened) return;
+    opened = true;
+    scene.classList.add('open');
+    card.setAttribute('aria-hidden','false');
+    setTimeout(rainPetals, 500);
+  }
+  function reset(){
+    opened = false;
+    scene.classList.remove('open');
+    card.setAttribute('aria-hidden','true');
+    if(petalTimer){ clearInterval(petalTimer); petalTimer = null; }
+  }
+
+  env.addEventListener('click', open);
+  env.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
+  replay.addEventListener('click', ()=>{ reset(); setTimeout(open, 650); });
+
+  // gentle falling hearts
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const colors = ['#E59AA0','#E6B27C','#9B2D3A','#F0CFA3'];
+  let petalTimer = null;
+  function rainPetals(){
+    if(reduce) return;
+    if(petalTimer) clearInterval(petalTimer);
+    petalTimer = setInterval(()=>{
+      if(!opened){ clearInterval(petalTimer); petalTimer = null; return; }
+      makePetal();
+    }, 220);
+  }
+  function makePetal(){
+    const p = document.createElement('div');
+    p.className = 'petal';
+    const size = 10 + Math.random()*14;
+    const c = colors[Math.floor(Math.random()*colors.length)];
+    p.style.left = Math.random()*100 + 'vw';
+    p.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${c}"><path d="M12 21s-7.5-4.9-9.8-9.2C.8 8.9 2.3 5.5 5.6 5.5c1.9 0 3.3 1.1 4.4 2.6C11.1 6.6 12.5 5.5 14.4 5.5c3.3 0 4.8 3.4 3.4 6.3C19.5 16.1 12 21 12 21z"/></svg>`;
+    document.body.appendChild(p);
+    const dur = 4500 + Math.random()*3500;
+    const drift = (Math.random()*160 - 80);
+    const rot = Math.random()*360;
+    p.animate([
+      { transform:`translate(0,0) rotate(0deg)`, opacity:0 },
+      { opacity:.9, offset:.1 },
+      { transform:`translate(${drift}px, 100vh) rotate(${rot}deg)`, opacity:0 }
+    ], { duration:dur, easing:'ease-in' });
+    setTimeout(()=>p.remove(), dur);
+  }
+</script>
+</body>
+</html>
